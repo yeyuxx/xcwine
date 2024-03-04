@@ -717,28 +717,29 @@ static void dump_gdi_objects( void )
  */
 HGDIOBJ alloc_gdi_handle( struct gdi_obj_header *obj, DWORD type, const struct gdi_obj_funcs *funcs )
 {
-    ERR("(XcSpaceWARN)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(code1)\n");
     GDI_HANDLE_ENTRY *entry;
     HGDIOBJ ret;
 
     assert( type );  /* type 0 is reserved to mark free entries */
+
+    //ERR("(XcSpaceWARN)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(start)\n");
 
     pthread_mutex_lock( &gdi_lock );
 
     entry = next_free;
     if (entry)
     {
-        ERR("(XcSpaceWARN)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(code2)\n");
+        //ERR("(XcSpaceWARN)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(code2)\n");
         next_free = (GDI_HANDLE_ENTRY *)(UINT_PTR)entry->Object;
     }
     else if (next_unused < gdi_shared->Handles + GDI_MAX_HANDLE_COUNT)
     {
-        ERR("(XcSpaceWARN)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(code3)\n");
+        //ERR("(XcSpaceWARN)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(code3)\n");
         entry = next_unused++;
     }
     else
     {
-        ERR("(XcSpaceERR)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(code4)\n");
+        //ERR("(XcSpaceERR)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(code4)\n");
         pthread_mutex_unlock( &gdi_lock );
         ERR( "out of GDI object handles, expect a crash\n" );
         if (TRACE_ON(gdi)) dump_gdi_objects();
@@ -754,8 +755,15 @@ HGDIOBJ alloc_gdi_handle( struct gdi_obj_header *obj, DWORD type, const struct g
     if (++entry->Generation == 0xff) entry->Generation = 1;
     ret = entry_to_handle( entry );
     pthread_mutex_unlock( &gdi_lock );
+
+    //ERR("(XcSpaceWARN)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(code5-type=%s,ret=%p,debug_count=%u,GDI_MAX_HANDLE_COUNT=%u)\n", gdi_obj_type(type), ret,
+           (int)InterlockedIncrement( &debug_count ), GDI_MAX_HANDLE_COUNT);
+
     TRACE( "allocated %s %p %u/%u\n", gdi_obj_type(type), ret,
            (int)InterlockedIncrement( &debug_count ), GDI_MAX_HANDLE_COUNT );
+           
+    //ERR("(XcSpaceWARN)-(dlls-win32u-gdiobj.c-alloc_gdi_handle)-(end)\n");
+
     return ret;
 }
 

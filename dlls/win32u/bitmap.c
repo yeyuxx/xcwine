@@ -54,10 +54,13 @@ static const struct gdi_obj_funcs bitmap_funcs =
  */
 HBITMAP WINAPI NtGdiCreateCompatibleBitmap( HDC hdc, INT width, INT height )
 {
+    ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateCompatibleBitmap)-(start)\n");
+    
     char buffer[FIELD_OFFSET( BITMAPINFO, bmiColors[256] )];
     BITMAPINFO *bi = (BITMAPINFO *)buffer;
     DIBSECTION dib;
 
+    ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateCompatibleBitmap)-(code1-width=%d,height=%d)\n", width, height);
     TRACE( "(%p,%d,%d)\n", hdc, width, height );
 
     if (!width || !height) return 0;
@@ -67,6 +70,7 @@ HBITMAP WINAPI NtGdiCreateCompatibleBitmap( HDC hdc, INT width, INT height )
                                   NtGdiGetDeviceCaps( hdc, PLANES ),
                                   NtGdiGetDeviceCaps( hdc, BITSPIXEL ), NULL );
 
+    ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateCompatibleBitmap)-(end to *)\n");
     switch (NtGdiExtGetObjectW( NtGdiGetDCObject( hdc, NTGDI_OBJ_SURF ),
                                 sizeof(dib), &dib ))
     {
@@ -97,11 +101,13 @@ HBITMAP WINAPI NtGdiCreateCompatibleBitmap( HDC hdc, INT width, INT height )
 HBITMAP WINAPI NtGdiCreateBitmap( INT width, INT height, UINT planes,
                                   UINT bpp, const void *bits )
 {
-    ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateBitmap)-(code1-width=%d,height=%d,planes=%u,bpp=%u)\n", width, height, planes, bpp);
     BITMAPOBJ *bmpobj;
     HBITMAP hbitmap;
     INT dib_stride;
     SIZE_T size;
+
+    ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateBitmap)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateBitmap)-(code1-width=%d,height=%d,planes=%u,bpp=%u)\n", width, height, planes, bpp);
 
     if (width > 0x7ffffff || height > 0x7ffffff)
     {
@@ -193,7 +199,7 @@ HBITMAP WINAPI NtGdiCreateBitmap( INT width, INT height, UINT planes,
         ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateBitmap)-(code11)\n");
         NtGdiSetBitmapBits( hbitmap, height * bmpobj->dib.dsBm.bmWidthBytes, bits );
     }
-
+    ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateBitmap)-(end)\n");
     TRACE("%dx%d, bpp %d planes %d: returning %p\n", width, height, bpp, planes, hbitmap);
     return hbitmap;
 }

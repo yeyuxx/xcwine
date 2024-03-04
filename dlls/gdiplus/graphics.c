@@ -147,11 +147,14 @@ static HBITMAP create_hatch_bitmap(const GpHatch *hatch, INT origin_x, INT origi
     bmih.biCompression = BI_RGB;
     bmih.biSizeImage = 0;
 
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-create_hatch_bitmap)-(start)\n");
+
     hbmp = CreateDIBSection(0, (BITMAPINFO *)&bmih, DIB_RGB_COLORS, (void **)&bits, NULL, 0);
     if (hbmp)
     {
         const unsigned char *hatch_data;
 
+        ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-create_hatch_bitmap)-(code1)\n");
         if (get_hatch_data(hatch->hatchstyle, &hatch_data) == Ok)
         {
             ARGB hatch_palette[4];
@@ -181,13 +184,14 @@ static HBITMAP create_hatch_bitmap(const GpHatch *hatch, INT origin_x, INT origi
         }
         else
         {
+            ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-create_hatch_bitmap)-(code2)\n");
             FIXME("Unimplemented hatch style %d\n", hatch->hatchstyle);
 
             for (y = 0; y < 64; y++)
                 bits[y] = hatch->forecol;
         }
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-create_hatch_bitmap)-(end)\n");
     return hbmp;
 }
 
@@ -1030,7 +1034,9 @@ static ARGB resample_bitmap_pixel(GDIPCONST GpRect *src_rect, LPBYTE bits, UINT 
     InterpolationMode interpolation, PixelOffsetMode offset_mode)
 {
     static int fixme;
-
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-resample_bitmap_pixel)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-resample_bitmap_pixel)-(code1-width=%u,height=%u)\n", width, height);
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-resample_bitmap_pixel)-(end to *)\n");
     switch (interpolation)
     {
     default:
@@ -1099,7 +1105,9 @@ static ARGB resample_bitmap_pixel_premult(GDIPCONST GpRect *src_rect, LPBYTE bit
     InterpolationMode interpolation, PixelOffsetMode offset_mode)
 {
     static int fixme;
-
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-resample_bitmap_pixel_premult)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-resample_bitmap_pixel_premult)-(code1-width=%u,height=%u)\n", width, height);
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-resample_bitmap_pixel_premult)-(end to *)\n");
     switch (interpolation)
     {
     default:
@@ -1200,12 +1208,19 @@ static BOOL brush_can_fill_path(GpBrush *brush, BOOL is_fill)
 static GpStatus brush_fill_path(GpGraphics *graphics, GpBrush *brush)
 {
     GpStatus status = Ok;
+    
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_path)-(start)\n");
     switch (brush->bt)
     {
     case BrushTypeSolidColor:
     {
         GpSolidFill *fill = (GpSolidFill*)brush;
+        
+        ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_path)-(code1)\n");
+
         HBITMAP bmp = ARGB2BMP(fill->color);
+
+        ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_path)-(code2)\n");
 
         if (bmp)
         {
@@ -1225,6 +1240,7 @@ static GpStatus brush_fill_path(GpGraphics *graphics, GpBrush *brush)
                 if (!hdc)
                 {
                     status = OutOfMemory;
+                    ERR("(XcSpaceERR)-(dlls-gdiplus-graphics.c-brush_fill_path)-(code3)\n");
                     DeleteObject(bmp);
                     break;
                 }
@@ -1243,14 +1259,15 @@ static GpStatus brush_fill_path(GpGraphics *graphics, GpBrush *brush)
     default:
     {
         HBRUSH gdibrush, old_brush;
-
+        ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_path)-(code4)\n");
         gdibrush = create_gdi_brush(brush, graphics->origin_x, graphics->origin_y);
         if (!gdibrush)
         {
+            ERR("(XcSpaceERR)-(dlls-gdiplus-graphics.c-brush_fill_path)-(code5)\n");
             status = OutOfMemory;
             break;
         }
-
+        ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_path)-(code6)\n");
         old_brush = SelectObject(graphics->hdc, gdibrush);
         FillPath(graphics->hdc);
         SelectObject(graphics->hdc, old_brush);
@@ -1258,7 +1275,7 @@ static GpStatus brush_fill_path(GpGraphics *graphics, GpBrush *brush)
         break;
     }
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_path)-(end)\n");
     return status;
 }
 
@@ -1280,6 +1297,8 @@ static BOOL brush_can_fill_pixels(GpBrush *brush)
 static GpStatus brush_fill_pixels(GpGraphics *graphics, GpBrush *brush,
     DWORD *argb_pixels, GpRect *fill_area, UINT cdwStride)
 {
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_pixels)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_pixels)-(end to next)\n");
     switch (brush->bt)
     {
     case BrushTypeSolidColor:
@@ -1394,6 +1413,7 @@ static GpStatus brush_fill_pixels(GpGraphics *graphics, GpBrush *brush,
         src_area.X = src_area.Y = 0;
         src_area.Width = bitmap->width;
         src_area.Height = bitmap->height;
+        ERR("(XcSpaceWARN)-(dlls-gdiplus-graphics.c-brush_fill_pixels)-(code-width=%d,height=%d)\n", bitmap->width, bitmap->height);
 
         draw_points[0].X = fill_area->X;
         draw_points[0].Y = fill_area->Y;
@@ -1472,7 +1492,7 @@ static GpStatus brush_fill_pixels(GpGraphics *graphics, GpBrush *brush,
                 }
             }
         }
-
+        
         return stat;
     }
     case BrushTypePathGradient:

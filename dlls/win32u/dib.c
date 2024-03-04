@@ -204,15 +204,16 @@ static BOOL bitmapinfo_from_user_bitmapinfo( BITMAPINFO *dst, const BITMAPINFO *
                                              UINT coloruse, BOOL allow_compression )
 {
     void *src_colors;
-
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-bitmapinfo_from_user_bitmapinfo)-(start)\n");
     if (coloruse > DIB_PAL_COLORS + 1) return FALSE;  /* FIXME: handle DIB_PAL_COLORS+1 format */
     if (!bitmapinfoheader_from_user_bitmapinfo( &dst->bmiHeader, &info->bmiHeader )) return FALSE;
     if (!is_valid_dib_format( &dst->bmiHeader, allow_compression )) return FALSE;
-
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-bitmapinfo_from_user_bitmapinfo)-(code1)\n");
     src_colors = (char *)info + info->bmiHeader.biSize;
 
     if (dst->bmiHeader.biCompression == BI_BITFIELDS)
     {
+        ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-bitmapinfo_from_user_bitmapinfo)-(code2)\n");
         /* bitfields are always at bmiColors even in larger structures */
         memcpy( dst->bmiColors, info->bmiColors, 3 * sizeof(DWORD) );
         dst->bmiHeader.biClrUsed = 0;
@@ -221,7 +222,7 @@ static BOOL bitmapinfo_from_user_bitmapinfo( BITMAPINFO *dst, const BITMAPINFO *
     {
         unsigned int colors = dst->bmiHeader.biClrUsed;
         unsigned int max_colors = 1 << dst->bmiHeader.biBitCount;
-
+        ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-bitmapinfo_from_user_bitmapinfo)-(code3)\n");
         if (!colors) colors = max_colors;
         else colors = min( colors, max_colors );
 
@@ -250,7 +251,7 @@ static BOOL bitmapinfo_from_user_bitmapinfo( BITMAPINFO *dst, const BITMAPINFO *
         dst->bmiHeader.biClrUsed = max_colors;
     }
     else dst->bmiHeader.biClrUsed = 0;
-
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-bitmapinfo_from_user_bitmapinfo)-(end)\n");
     return TRUE;
 }
 
@@ -1435,6 +1436,7 @@ HBITMAP WINAPI NtGdiCreateDIBitmapInternal( HDC hdc, INT width, INT height, DWOR
 {
     HBITMAP handle;
 
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-NtGdiCreateDIBitmapInternal)-(start)\n");
     if (coloruse > DIB_PAL_COLORS + 1 || width < 0) return 0;
 
     /* Top-down DIBs have a negative height */
@@ -1442,6 +1444,9 @@ HBITMAP WINAPI NtGdiCreateDIBitmapInternal( HDC hdc, INT width, INT height, DWOR
 
     TRACE( "hdc=%p, init=%u, bits=%p, data=%p, coloruse=%u (bitmap: width=%d, height=%d)\n",
            hdc, (int)init, bits, data, coloruse, width, height );
+
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-NtGdiCreateDIBitmapInternal)-(code1-hdc=%p,init=%u,bits=%p,data=%p,coloruse=%u,width=%d,height=%d)\n", 
+        hdc, (int)init, bits, data, coloruse, width, height);
 
     if (hdc == NULL)
         handle = NtGdiCreateBitmap( width, height, 1, 1, NULL );
@@ -1459,7 +1464,7 @@ HBITMAP WINAPI NtGdiCreateDIBitmapInternal( HDC hdc, INT width, INT height, DWOR
             }
         }
     }
-
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-NtGdiCreateDIBitmapInternal)-(end)\n");
     return handle;
 }
 
@@ -1471,6 +1476,7 @@ HBITMAP WINAPI NtGdiCreateDIBSection( HDC hdc, HANDLE section, DWORD offset, con
                                       UINT usage, UINT header_size, ULONG flags,
                                       ULONG_PTR color_space, void **bits )
 {
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-NtGdiCreateDIBSection)-(start)\n");
     char buffer[FIELD_OFFSET( BITMAPINFO, bmiColors[256] )];
     BITMAPINFO *info = (BITMAPINFO *)buffer;
     HBITMAP ret = 0;
@@ -1501,6 +1507,12 @@ HBITMAP WINAPI NtGdiCreateDIBSection( HDC hdc, HANDLE section, DWORD offset, con
     bmp->dib.dsBm.bmPlanes     = info->bmiHeader.biPlanes;
     bmp->dib.dsBm.bmBitsPixel  = info->bmiHeader.biBitCount;
     bmp->dib.dsBmih            = info->bmiHeader;
+
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-NtGdiCreateDIBSection)-(code1-biWidth=%d,biHeight=%d,biPlanes=%d,biBitCount=%d,biCompression=%s,biSizeImage=%d,usage=%s)\n",
+        (int)info->bmiHeader.biWidth, (int)info->bmiHeader.biHeight,
+        info->bmiHeader.biPlanes, info->bmiHeader.biBitCount,
+        info->bmiHeader.biCompression == BI_BITFIELDS? "BI_BITFIELDS" : "BI_RGB",
+        (int)info->bmiHeader.biSizeImage, usage == DIB_PAL_COLORS? "PAL" : "RGB");
 
     if (info->bmiHeader.biBitCount <= 8)  /* build the color table */
     {
@@ -1554,13 +1566,16 @@ HBITMAP WINAPI NtGdiCreateDIBSection( HDC hdc, HANDLE section, DWORD offset, con
     }
     bmp->dib.dshSection = section;
     bmp->dib.dsOffset = offset;
-
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-NtGdiCreateDIBSection)-(code2)\n");
     if ((ret = alloc_gdi_handle( &bmp->obj, NTGDI_OBJ_BITMAP, &dib_funcs )))
     {
         if (bits) *bits = bmp->dib.dsBm.bmBits;
         return ret;
     }
-
+    
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-NtGdiCreateDIBSection)-(code3)\n");
+    
+    ERR("(XcSpaceWARN)-(dlls-win32u-dib.c-NtGdiCreateDIBSection)-(end to *)\n");
     if (section) NtUnmapViewOfSection( GetCurrentProcess(), mapBits );
     else
     {

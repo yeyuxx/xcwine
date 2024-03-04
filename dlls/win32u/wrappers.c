@@ -22,6 +22,11 @@
 #define WIN32_NO_STATUS
 #include "win32u_private.h"
 
+#include "wine/debug.h"
+
+WINE_DEFAULT_DEBUG_CHANNEL(wrappers);
+
+
 static const struct unix_funcs *unix_funcs;
 
 INT WINAPI NtGdiAbortDoc( HDC hdc )
@@ -86,7 +91,10 @@ BOOL WINAPI NtGdiComputeXformCoefficients( HDC hdc )
 
 HBITMAP WINAPI NtGdiCreateCompatibleBitmap( HDC hdc, INT width, INT height )
 {
+    ERR("(XcSpaceWARN)-(dlls-win32u-wrappers.c-NtGdiCreateCompatibleBitmap)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-win32u-bitmap.c-NtGdiCreateCompatibleBitmap)-(code1-width=%d,height=%d)\n", width, height);
     if (!unix_funcs) return 0;
+    ERR("(XcSpaceWARN)-(dlls-win32u-wrappers.c-NtGdiCreateCompatibleBitmap)-(end to pNtGdiCreateCompatibleBitmap)\n");
     return unix_funcs->pNtGdiCreateCompatibleBitmap( hdc, width, height );
 }
 

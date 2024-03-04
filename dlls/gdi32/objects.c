@@ -138,10 +138,13 @@ HGDIOBJ get_full_gdi_handle( HGDIOBJ obj )
  */
 BOOL WINAPI DllMain( HINSTANCE inst, DWORD reason, LPVOID reserved )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-DllMain)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-DllMain)-(code1)\n");
     if (reason != DLL_PROCESS_ATTACH) return TRUE;
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-DllMain)-(code2)\n");
     DisableThreadLibraryCalls( inst );
     gdi32_module = inst;
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-DllMain)-(end)\n");
     return TRUE;
 }
 
@@ -150,10 +153,13 @@ BOOL WINAPI DllMain( HINSTANCE inst, DWORD reason, LPVOID reserved )
  */
 DWORD WINAPI GetObjectType( HGDIOBJ handle )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetObjectType)-(start)\n");
     DWORD type = get_object_type( handle );
-
+    
     TRACE( "%p -> %lu\n", handle, type );
 
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetObjectType)-(code1-handle=%p,type=%lu)\n", handle, type);
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetObjectType)-(end)\n");
     switch (type)
     {
     case NTGDI_OBJ_PEN:         return OBJ_PEN;
@@ -177,9 +183,13 @@ DWORD WINAPI GetObjectType( HGDIOBJ handle )
 
 static int obj_map_cmp( const void *key, const struct wine_rb_entry *entry )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-obj_map_cmp)-(start)\n");
     struct obj_map_entry *obj_entry = WINE_RB_ENTRY_VALUE( entry, struct obj_map_entry, entry );
     UINT_PTR a = (UINT_PTR)key;
     UINT_PTR b = (UINT_PTR)obj_entry->obj;
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-obj_map_cmp)-(code1-a=%u,b=%u)\n", a, b);
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-obj_map_cmp)-(end)\n");
     if (a > b) return 1;
     if (a < b) return -1;
     return 0;
@@ -196,7 +206,7 @@ BOOL WINAPI DeleteObject( HGDIOBJ obj )
 {
     struct hdc_list *hdc_list = NULL;
     struct wine_rb_entry *entry;
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-DeleteObject)-(start)\n");
     obj = get_full_gdi_handle( obj );
     switch (gdi_handle_type( obj ))
     {
@@ -229,7 +239,7 @@ BOOL WINAPI DeleteObject( HGDIOBJ obj )
         HeapFree( GetProcessHeap(), 0, hdc_list );
         hdc_list = next;
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-DeleteObject)-(end to NtGdiDeleteObjectApp)\n");
     return NtGdiDeleteObjectApp( obj );
 }
 
@@ -243,6 +253,8 @@ void GDI_hdc_using_object( HGDIOBJ obj, HDC hdc, void (*delete)( HDC hdc, HGDIOB
     struct hdc_list *hdc_list;
     GDI_HANDLE_ENTRY *entry;
 
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GDI_hdc_using_object)-(start)\n");
+    
     TRACE( "obj %p hdc %p\n", obj, hdc );
 
     EnterCriticalSection( &obj_map_cs );
@@ -281,6 +293,8 @@ void GDI_hdc_using_object( HGDIOBJ obj, HDC hdc, void (*delete)( HDC hdc, HGDIOB
         }
     }
     LeaveCriticalSection( &obj_map_cs );
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GDI_hdc_using_object)-(end)\n");
 }
 
 /***********************************************************************
@@ -290,6 +304,8 @@ void GDI_hdc_using_object( HGDIOBJ obj, HDC hdc, void (*delete)( HDC hdc, HGDIOB
 void GDI_hdc_not_using_object( HGDIOBJ obj, HDC hdc )
 {
     struct wine_rb_entry *entry;
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GDI_hdc_not_using_object)-(start)\n");
 
     TRACE( "obj %p hdc %p\n", obj, hdc );
 
@@ -315,6 +331,8 @@ void GDI_hdc_not_using_object( HGDIOBJ obj, HDC hdc )
         }
     }
     LeaveCriticalSection( &obj_map_cs );
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GDI_hdc_not_using_object)-(end)\n");
 }
 
 /***********************************************************************
@@ -327,6 +345,7 @@ HGDIOBJ WINAPI SelectObject( HDC hdc, HGDIOBJ obj )
     DC_ATTR *dc_attr;
     HGDIOBJ ret;
 
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-SelectObject)-(start)\n");
     TRACE( "(%p,%p)\n", hdc, obj );
 
     obj = get_full_gdi_handle( obj );
@@ -356,7 +375,15 @@ HGDIOBJ WINAPI SelectObject( HDC hdc, HGDIOBJ obj )
         return 0;
     }
 
-    if (!ret) SetLastError( ERROR_INVALID_HANDLE );
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-SelectObject)-(code1=ret=%p)\n", ret);
+
+    if (!ret) 
+    {
+        ERR("(XcSpaceERR)-(dlls-gdi32-objects.c-SelectObject)-(code2)\n");
+        SetLastError( ERROR_INVALID_HANDLE );
+    }
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-SelectObject)-(end)\n");
     return ret;
 }
 
@@ -367,6 +394,7 @@ INT WINAPI GetObjectW( HGDIOBJ handle, INT count, void *buffer )
 {
     int result;
 
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetObjectW)-(start)\n");
     TRACE( "%p %d %p\n", handle, count, buffer );
 
     result = NtGdiExtGetObjectW( handle, count, buffer );
@@ -386,6 +414,7 @@ INT WINAPI GetObjectW( HGDIOBJ handle, INT count, void *buffer )
             SetLastError( ERROR_INVALID_HANDLE );
         }
     }
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetObjectW)-(end)\n");
     return result;
 }
 
@@ -395,6 +424,8 @@ INT WINAPI GetObjectW( HGDIOBJ handle, INT count, void *buffer )
 HGDIOBJ WINAPI GetCurrentObject( HDC hdc, UINT type )
 {
     unsigned int obj_type;
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetCurrentObject)-(start)\n");
 
     switch (type)
     {
@@ -411,7 +442,7 @@ HGDIOBJ WINAPI GetCurrentObject( HDC hdc, UINT type )
         FIXME( "(%p,%d): unknown type.\n", hdc, type );
         return 0;
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetCurrentObject)-(end to NtGdiGetDCObject)\n");
     return NtGdiGetDCObject( hdc, obj_type );
 }
 
@@ -420,7 +451,10 @@ HGDIOBJ WINAPI GetCurrentObject( HDC hdc, UINT type )
  */
 HGDIOBJ WINAPI DECLSPEC_HOTPATCH GetStockObject( INT obj )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetStockObject)-(start)\n");
     if (obj < 0 || obj > STOCK_LAST + 1 || obj == 9) return 0;
+    
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetStockObject)-(code1-obj=%d)\n", obj);
 
     /* Wine stores stock objects in predictable order, see init_stock_objects */
     switch (obj)
@@ -438,7 +472,7 @@ HGDIOBJ WINAPI DECLSPEC_HOTPATCH GetStockObject( INT obj )
         if (GetDpiForSystem() != 96) obj = STOCK_LAST + 4;
         break;
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetStockObject)-(end to entry_to_handle)\n");
     return entry_to_handle( handle_entry( ULongToHandle( obj + FIRST_GDI_HANDLE )));
 }
 
@@ -447,6 +481,8 @@ HGDIOBJ WINAPI DECLSPEC_HOTPATCH GetStockObject( INT obj )
  */
 INT WINAPI GetObjectA( HGDIOBJ handle, INT count, void *buffer )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetObjectA)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetObjectA)-(code1-handle=%p,count=%d,buffer=%p)\n", handle, count, buffer);
     TRACE("%p %d %p\n", handle, count, buffer );
 
     if (get_object_type( handle ) == NTGDI_OBJ_FONT)
@@ -466,7 +502,7 @@ INT WINAPI GetObjectA( HGDIOBJ handle, INT count, void *buffer )
         }
         return count;
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetObjectA)-(end to GetObjectW)\n");
     return GetObjectW( handle, count, buffer );
 }
 
@@ -475,7 +511,9 @@ INT WINAPI GetObjectA( HGDIOBJ handle, INT count, void *buffer )
  */
 HPEN WINAPI CreatePenIndirect( const LOGPEN *pen )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePenIndirect)-(start)\n");
     ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePenIndirect)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePenIndirect)-(end to CreatePen)\n");
     return CreatePen( pen->lopnStyle, pen->lopnWidth.x, pen->lopnColor );
 }
 
@@ -484,8 +522,10 @@ HPEN WINAPI CreatePenIndirect( const LOGPEN *pen )
  */
 HPEN WINAPI CreatePen( INT style, INT width, COLORREF color )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePen)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePen)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePen)-(code1-style=%d,width=%d,color=%p)\n", style, width, color);
     if (style < 0 || style > PS_INSIDEFRAME) style = PS_SOLID;
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePen)-(end to NtGdiCreatePen)\n");
     return NtGdiCreatePen( style, width, color, NULL );
 }
 
@@ -495,11 +535,12 @@ HPEN WINAPI CreatePen( INT style, INT width, COLORREF color )
 HPEN WINAPI ExtCreatePen( DWORD style, DWORD width, const LOGBRUSH *brush, DWORD style_count,
                           const DWORD *style_bits )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-ExtCreatePen)-(code1)\n");
     ULONG brush_style = brush->lbStyle;
     ULONG_PTR hatch = brush->lbHatch;
     HPEN pen;
 
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-ExtCreatePen)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-ExtCreatePen)-(code1-style=%g,width=%g,brush_style=%g)\n", style, width, brush_style);
     if (brush_style == BS_DIBPATTERN)
     {
         if (!(hatch = (ULONG_PTR)GlobalLock( (HGLOBAL)hatch ))) return 0;
@@ -510,6 +551,8 @@ HPEN WINAPI ExtCreatePen( DWORD style, DWORD width, const LOGBRUSH *brush, DWORD
                              style_count, style_bits, /* FIXME */ 0, FALSE, NULL );
 
     if (brush->lbStyle == BS_DIBPATTERN) GlobalUnlock( (HGLOBAL)brush->lbHatch );
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-ExtCreatePen)-(end)\n");
     return pen;
 }
 
@@ -518,7 +561,9 @@ HPEN WINAPI ExtCreatePen( DWORD style, DWORD width, const LOGBRUSH *brush, DWORD
  */
 HBRUSH WINAPI CreateBrushIndirect( const LOGBRUSH *brush )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBrushIndirect)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBrushIndirect)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBrushIndirect)-(code-lbStyle=%g)\n", brush->lbStyle);
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBrushIndirect)-(end to *)\n");
     switch (brush->lbStyle)
     {
     case BS_NULL:
@@ -545,7 +590,8 @@ HBRUSH WINAPI CreateBrushIndirect( const LOGBRUSH *brush )
  */
 HBRUSH WINAPI CreateSolidBrush( COLORREF color )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateSolidBrush)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateSolidBrush)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateSolidBrush)-(end to NtGdiCreateSolidBrush)\n");
     return NtGdiCreateSolidBrush( color, NULL );
 }
 
@@ -554,7 +600,8 @@ HBRUSH WINAPI CreateSolidBrush( COLORREF color )
  */
 HBRUSH WINAPI CreateHatchBrush( INT style, COLORREF color )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateHatchBrush)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateHatchBrush)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateHatchBrush)-(end to NtGdiCreateHatchBrushInternal)\n");
     return NtGdiCreateHatchBrushInternal( style, color, FALSE );
 }
 
@@ -563,7 +610,8 @@ HBRUSH WINAPI CreateHatchBrush( INT style, COLORREF color )
  */
 HBRUSH WINAPI CreatePatternBrush( HBITMAP bitmap )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePatternBrush)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePatternBrush)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePatternBrush)-(end to NtGdiCreatePatternBrushInternal)\n");
     return NtGdiCreatePatternBrushInternal( bitmap, FALSE, FALSE );
 }
 
@@ -572,15 +620,17 @@ HBRUSH WINAPI CreatePatternBrush( HBITMAP bitmap )
  */
 HBRUSH WINAPI CreateDIBPatternBrush( HGLOBAL hbitmap, UINT coloruse )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBPatternBrush)-(code1)\n");
     HBRUSH brush;
     void *mem;
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBPatternBrush)-(start)\n");
 
     TRACE( "%p\n", hbitmap );
 
     if (!(mem = GlobalLock( hbitmap ))) return 0;
     brush = NtGdiCreateDIBBrush( mem, coloruse, /* FIXME */ 0, FALSE, FALSE, hbitmap );
     GlobalUnlock( hbitmap );
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBPatternBrush)-(end)\n");
     return brush;
 }
 
@@ -589,7 +639,8 @@ HBRUSH WINAPI CreateDIBPatternBrush( HGLOBAL hbitmap, UINT coloruse )
  */
 HBRUSH WINAPI CreateDIBPatternBrushPt( const void *data, UINT coloruse )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBPatternBrushPt)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBPatternBrushPt)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBPatternBrushPt)-(end to NtGdiCreateDIBBrush)\n");
     return NtGdiCreateDIBBrush( data, coloruse, /* FIXME */ 0, FALSE, FALSE, data );
 }
 
@@ -598,6 +649,7 @@ HBRUSH WINAPI CreateDIBPatternBrushPt( const void *data, UINT coloruse )
  */
 HBITMAP WINAPI CreateBitmapIndirect( const BITMAP *bmp )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBitmapIndirect)-(start)\n");
     ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBitmapIndirect)-(code1-bmp=%p)\n", bmp);
     if (!bmp || bmp->bmType)
     {
@@ -605,7 +657,7 @@ HBITMAP WINAPI CreateBitmapIndirect( const BITMAP *bmp )
         SetLastError( ERROR_INVALID_PARAMETER );
         return NULL;
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBitmapIndirect)-(end to CreateBitmap)\n");
     return CreateBitmap( bmp->bmWidth, bmp->bmHeight, bmp->bmPlanes,
                          bmp->bmBitsPixel, bmp->bmBits );
 }
@@ -618,13 +670,14 @@ HBITMAP WINAPI CreateBitmapIndirect( const BITMAP *bmp )
 HBITMAP WINAPI CreateBitmap( INT width, INT height, UINT planes,
                              UINT bpp, const void *bits )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBitmap)-(start)\n");
     ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBitmap)-(code1-width=%d,height=%d,planes=%u,bpp=%u)\n", width, height, planes, bpp);
     if (!width || !height)
     {
         ERR("(XcSpaceERR)-(dlls-gdi32-objects.c-CreateBitmap)-(code2)\n");
         return GetStockObject( STOCK_LAST + 1 ); /* default 1x1 bitmap */
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateBitmap)-(end to NtGdiCreateBitmap)\n");
     return NtGdiCreateBitmap( width, height, planes, bpp, bits );
 }
 
@@ -635,10 +688,14 @@ HBITMAP WINAPI CreateBitmap( INT width, INT height, UINT planes,
  */
 HBITMAP WINAPI CreateCompatibleBitmap( HDC hdc, INT width, INT height )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateCompatibleBitmap)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateCompatibleBitmap)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateCompatibleBitmap)-(code1-width=%d,height=%d)\n", width, height);
     if (!width || !height)
+    {
+        ERR("(XcSpaceERR)-(dlls-gdi32-objects.c-CreateCompatibleBitmap)-(code2)\n");
         return GetStockObject( STOCK_LAST + 1 ); /* default 1x1 bitmap */
-
+    }
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateCompatibleBitmap)-(end to NtGdiCreateCompatibleBitmap)\n");
     return NtGdiCreateCompatibleBitmap( hdc, width, height );
 }
 
@@ -649,7 +706,8 @@ HBITMAP WINAPI CreateCompatibleBitmap( HDC hdc, INT width, INT height )
  */
 HBITMAP WINAPI CreateDiscardableBitmap( HDC hdc, INT width, INT height )
 {
-    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDiscardableBitmap)-(code1)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDiscardableBitmap)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDiscardableBitmap)-(end to CreateCompatibleBitmap)\n");
     return CreateCompatibleBitmap( hdc, width, height );
 }
 
@@ -660,12 +718,14 @@ HBITMAP WINAPI CreateDiscardableBitmap( HDC hdc, INT width, INT height )
  */
 HRGN WINAPI ExtCreateRegion( const XFORM *xform, DWORD count, const RGNDATA *data )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-ExtCreateRegion)-(start)\n");
     if (!data)
     {
         SetLastError( ERROR_INVALID_PARAMETER );
         return 0;
     }
 
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-ExtCreateRegion)-(end to NtGdiExtCreateRegion)\n");
     return NtGdiExtCreateRegion( xform, count, data );
 }
 
@@ -674,8 +734,10 @@ HRGN WINAPI ExtCreateRegion( const XFORM *xform, DWORD count, const RGNDATA *dat
  */
 HRGN WINAPI CreatePolyPolygonRgn( const POINT *points, const INT *counts, INT count, INT mode )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePolyPolygonRgn)-(start)\n");
     ULONG ret = NtGdiPolyPolyDraw( ULongToHandle(mode), points, (const ULONG *)counts,
                                    count, NtGdiPolyPolygonRgn );
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreatePolyPolygonRgn)-(end to ULongToHandle)\n");
     return ULongToHandle( ret );
 }
 
@@ -818,7 +880,7 @@ static const PALETTEENTRY default_system_palette_high[] =
 UINT WINAPI GetSystemPaletteEntries( HDC hdc, UINT start, UINT count, PALETTEENTRY *entries )
 {
     UINT i, ret;
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetSystemPaletteEntries)-(start)\n");
     ret = NtGdiDoPalette( hdc, start, count, (void *)entries,
                           NtGdiGetSystemPaletteEntries, FALSE );
     if (ret) return ret;
@@ -836,7 +898,7 @@ UINT WINAPI GetSystemPaletteEntries( HDC hdc, UINT start, UINT count, PALETTEENT
         else
             memset( &entries[i], 0, sizeof(entries[i]) );
     }
-
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-GetSystemPaletteEntries)-(end)\n");
     return 0;
 }
 
@@ -848,6 +910,8 @@ HBITMAP WINAPI CreateDIBitmap( HDC hdc, const BITMAPINFOHEADER *header, DWORD in
 {
     int width, height;
 
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBitmap)-(start)\n");
+    
     if (!header) return 0;
 
     if (header->biSize == sizeof(BITMAPCOREHEADER))
@@ -864,7 +928,11 @@ HBITMAP WINAPI CreateDIBitmap( HDC hdc, const BITMAPINFOHEADER *header, DWORD in
     }
     else return 0;
 
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBitmap)-(code1-width=%d,height=%d)\n", width, height);
+    
     if (!width || !height) return GetStockObject( STOCK_LAST + 1 ); /* default 1x1 bitmap */
+
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBitmap)-(end to NtGdiCreateDIBitmapInternal)\n");
     return NtGdiCreateDIBitmapInternal( hdc, width, height, init, bits, data, coloruse,
                                         0, 0, 0, 0 );
 }
@@ -875,6 +943,10 @@ HBITMAP WINAPI CreateDIBitmap( HDC hdc, const BITMAPINFOHEADER *header, DWORD in
 HBITMAP WINAPI DECLSPEC_HOTPATCH CreateDIBSection( HDC hdc, const BITMAPINFO *bmi, UINT usage,
                                                    void **bits, HANDLE section, DWORD offset )
 {
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBSection)-(start)\n");
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBSection)-(code1-bmi=%p)\n", bmi);
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBSection)-(code1-biWidth=%g,biHeight=%g)\n", bmi->bmiHeader.biWidth, bmi->bmiHeader.biHeight);
+    ERR("(XcSpaceWARN)-(dlls-gdi32-objects.c-CreateDIBSection)-(end to NtGdiCreateDIBSection)\n");
     return NtGdiCreateDIBSection( hdc, section, offset, bmi, usage, 0, 0, 0, bits );
 }
 

@@ -1641,6 +1641,8 @@ static DWORD create_image_pixmap( BITMAPINFO *info, const struct gdi_image_bits 
     GC gc;
     XImage *image;
 
+    ERR("(XcSpaceWARN)-(dlls-winex11.drv-xrender.c-create_image_pixmap)-(code1-width=%d,height=%d)\n", width, height);
+
     image = XCreateImage( gdi_display, default_visual.visual, depth, ZPixmap, 0, NULL,
                           info->bmiHeader.biWidth, height, 32, 0 );
     if (!image) return ERROR_OUTOFMEMORY;

@@ -340,6 +340,9 @@ static void test_GetImageDimension(void)
     expect(Ok, stat);
     expectf(WIDTH,  w);
     expectf(HEIGHT, h);
+
+    ERR("(XcSpaceWARN)-(dlls-gdiplus-tests-image.c-test_GetImageDimension)-(code1-w=%d,h=%d,width=%d,height=%d)\n", w, h, WIDTH, HEIGHT);
+    
     GdipDisposeImage((GpImage*)bm);
 }
 
